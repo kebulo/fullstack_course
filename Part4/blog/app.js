@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 
 const logger = require('./utils/logger');
 const blogsRoutes = require('./controllers/blogsController');
+const usersRoutes = require('./controllers/usersController');
+const loginRoutes = require('./controllers/loginController');
 const middleware = require('./utils/middleware');
 
 const app = express();
@@ -27,6 +29,8 @@ mongoose.connect(config.MONGODB_URI)
 app.use(middleware.requestLogger);
 // Setting up the blog controller
 app.use('/api/blogs', blogsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/login', loginRoutes);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
