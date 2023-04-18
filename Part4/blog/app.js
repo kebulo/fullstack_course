@@ -1,5 +1,6 @@
 const config = require('./utils/config');
 const express = require('express');
+require('express-async-errors');
 const cors = require('cors');
 const morgan = require('morgan');
 
@@ -27,6 +28,7 @@ mongoose.connect(config.MONGODB_URI)
 
 
 app.use(middleware.requestLogger);
+
 // Setting up the blog controller
 app.use('/api/blogs', blogsRoutes);
 app.use('/api/users', usersRoutes);
