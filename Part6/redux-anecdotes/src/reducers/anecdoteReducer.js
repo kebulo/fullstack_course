@@ -1,71 +1,54 @@
-const anecdotesAtStart = [
-    'If it hurts, do it more often',
-    'Adding manpower to a late software project makes it later!',
-    'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-    'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-    'Premature optimization is the root of all evil.',
-    'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+import { createSlice } from '@reduxjs/toolkit';
+import anecdoteService from '../services/anecdotes';
 
-const getId = () => (100000 * Math.random()).toFixed(0);
-
-const asObject = (anecdote) => {
-    return {
-        content: anecdote,
-        id: getId(),
-        votes: 0
-    }
-}
-
-const initialState = anecdotesAtStart.map(asObject)
-
-const reducer = (state = initialState, action) => {
-    switch (action.type) {
-        case 'NEW_NOTE':
-            const anecdoteData = action.data;
+const anecdoteSlice = createSlice({
+    name: 'anecdotes',
+    initialState: [],
+    reducers: {
+        setAnecdotes(state, action) {
+            return action.payload;
+        },
+        setAnecdote(state, action) {
+            const anecdoteData = action.payload;
             return [...state, anecdoteData];
-        case 'VOTE_ANECDOTE':
-            const id = action.data.id;
+        },
+        setVoteAnecdote(state, action) {
+            const id = action.payload;
+
             const anecdoteToChange = state.find(a => a.id === id);
+
             const changedAnecdote = {
                 ...anecdoteToChange, votes: anecdoteToChange.votes + 1
             };
 
-            return state.map(anecdote => (action.data.id === anecdote.id)
+            return state.map(anecdote => (id === anecdote.id)
                 ? changedAnecdote
                 : anecdote);
-        default:
-            return state;
-    }
-}
-
-/**
- * 
- * @param {string} content Anecdote content
- * @returns {JSON} action type and data to be created
- */
-export const createAnecdote = (content) => {
-    console.log(content, 'Redux method');
-    return {
-        type: 'NEW_NOTE',
-        data: {
-            content,
-            id: getId(),
-            votes: 0
         }
     }
-}
+});
 
-/**
- * 
- * @param {Number} id Id of the anecdote to vote to
- * @returns {JSON} action type and data of the anecdote to vote for
- */
-export const voteAnecdote = (id) => {
-    return {
-        type: 'VOTE_ANECDOTE',
-        data: { id }
+export const { setAnecdotes, setAnecdote, setVoteAnecdote } = anecdoteSlice.actions;
+
+export const initializeAnecdotes = () => {
+    return async dispatch => {
+        const anecdote = await anecdoteService.getAll();
+        dispatch(setAnecdotes(anecdote));
     }
 }
 
-export default reducer;
+export const createAnecdote = (content) => {
+    return async dispatch => {
+        const anecdote = await anecdoteService.createAnecdote(content);
+        dispatch(setAnecdote(anecdote));
+    }
+}
+
+export const voteAnecdote = (anecdote) => {
+    return async dispatch => {
+        const anecdoteResp = await anecdoteService.voteAnecdote(anecdote);
+        dispatch(setVoteAnecdote(anecdote.id));
+    }
+}
+
+export default anecdoteSlice.reducer;
